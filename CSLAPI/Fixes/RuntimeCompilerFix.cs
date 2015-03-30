@@ -14,13 +14,16 @@ namespace CSLAPI.Fixes
 		[ClientFix("PluginManager Additional Assemblies Fix")]
 		public static void PluginManagerFix()
 		{
+			// Should really just get a list of all assemblies loaded in the domain and be done with it.
+			// Should also do this whenever a new assembly is loaded, so cross-mod compat works.
+
 			PluginManager.SetAdditionalAssemblies(
 				"ICities.dll", // Original
 				"ColossalManaged.dll", // Add the CO lib
 				"Assembly-CSharp.dll", // The Assembly-CSharp lib (which contains 99% of the game code)
-				"UnityEngine.dll", // Unity, just for kicks
+				// "UnityEngine.dll", // Note: UnitEngine gets added by PluginManager when it's actually compiled (options.ReferencedAssemblies.Add(typeof(GameObject).Assembly.Location);)
 				"UnityEngine.UI.dll", // UI stuff
-				// Include ourselves in the compiler.
+				// Include ourselves in the compiler so we can do runtime hooks, etc, from other mods
 				Path.GetFileName(Assembly.GetExecutingAssembly().Location)
 				);
 		}
