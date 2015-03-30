@@ -56,12 +56,7 @@ namespace CSLAPI.Fixes
 			// Should really just get a list of all assemblies loaded in the domain and be done with it.
 			// Should also do this whenever a new assembly is loaded, so cross-mod compat works.
 
-			List<string> assemblies = new List<string>
-			{
-				"ICities.dll",
-				"ColossalManaged.dll",
-				"UnityEngine.UI.dll"
-			};
+			List<string> assemblies = new List<string>();
 
 			foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
 			{
@@ -70,14 +65,7 @@ namespace CSLAPI.Fixes
 					continue;
 				}
 
-				var dllName = Path.GetFileName(asm.Location);
-
-				// This gets added automatically in their compiler
-				if (dllName == "UnityEngine.dll")
-				{
-					continue;
-				}
-
+				var dllName = asm.Location;
 				assemblies.Add(dllName);
 			}
 
