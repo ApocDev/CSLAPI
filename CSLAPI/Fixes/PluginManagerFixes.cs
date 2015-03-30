@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 
 using ColossalFramework;
 using ColossalFramework.Plugins;
@@ -12,9 +10,12 @@ using CSLAPI.Runtime;
 
 namespace CSLAPI.Fixes
 {
-	class PluginManagerFixes
+	internal class PluginManagerFixes
 	{
+		// Static ref to keep it available "all the time" and not dispose of the detour unexepectedly
+		// At least until this domain is unloaded, and it has to revert itself.
 		private static RuntimeDetour _pluginManagerLoadPluginDetour;
+
 		[ClientFix("PluginManager.LoadPlugin assembly file path info fix")]
 		// ReSharper disable once UnusedMember.Global
 		public static void PluginManagerLoadPluginFix()
@@ -43,10 +44,9 @@ namespace CSLAPI.Fixes
 			}
 			catch (Exception exception)
 			{
-				CODebugBase<InternalLogChannel>.Error(InternalLogChannel.Mods, "Assembly at " + dllPath + " failed to load.\n" + exception.ToString());
+				CODebugBase<InternalLogChannel>.Error(InternalLogChannel.Mods, "Assembly at " + dllPath + " failed to load.\n" + exception);
 				return null;
 			}
-
 		}
 
 		[ClientFix("PluginManager Additional Assemblies Fix")]
@@ -66,13 +66,17 @@ namespace CSLAPI.Fixes
 			foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
 			{
 				if (asm.GlobalAssemblyCache)
+				{
 					continue;
+				}
 
 				var dllName = Path.GetFileName(asm.Location);
 
 				// This gets added automatically in their compiler
 				if (dllName == "UnityEngine.dll")
+				{
 					continue;
+				}
 
 				assemblies.Add(dllName);
 			}

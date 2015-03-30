@@ -162,9 +162,11 @@ namespace CSLAPI.Runtime
 
 		protected virtual void Dispose(bool disposing)
 		{
+			if (IsApplied)
+				Remove();
+
 			if (disposing)
 			{
-				Remove();
 				GC.SuppressFinalize(this);
 				IsDisposed = true;
 			}
