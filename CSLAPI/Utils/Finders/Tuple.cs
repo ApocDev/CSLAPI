@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace CSLAPI.Utils.Finders
 {
+	// Either Mono or .NET 3.5 (been many years since I touched 3.5) doesn't have a Tuple class in it. So we'll add a very simple one.
 	[Serializable]
 	public class Tuple<T1, T2> : IEquatable<Tuple<T1, T2>>
 	{

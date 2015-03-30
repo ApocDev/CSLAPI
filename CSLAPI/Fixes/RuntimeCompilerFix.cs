@@ -26,6 +26,11 @@ namespace CSLAPI.Fixes
 				// Include ourselves in the compiler so we can do runtime hooks, etc, from other mods
 				Path.GetFileName(Assembly.GetExecutingAssembly().Location)
 				);
+
+			// Compile scripts again here?
+			PluginManager.CompileScripts();
+			PluginManager.instance.LoadPlugins();
+			PluginHelper.ValidatePlugins();
 		}
 	}
 }
