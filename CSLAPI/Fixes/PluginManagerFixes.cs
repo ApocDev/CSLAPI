@@ -87,8 +87,6 @@ namespace CSLAPI.Fixes
 			PluginManager.CompileScripts();
 			PluginManager.instance.LoadPlugins();
 			PluginHelper.ValidatePlugins();
-
-			Assembly.LoadFrom()
 		}
 	}
 }
