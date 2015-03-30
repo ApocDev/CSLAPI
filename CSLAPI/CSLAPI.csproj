@@ -33,7 +33,7 @@
   <ItemGroup>
     <Compile Include="Bootstrap.cs" />
     <Compile Include="Fixes\ClientFixAttribute.cs" />
-    <Compile Include="Fixes\RuntimeCompilerFix.cs" />
+    <Compile Include="Fixes\PluginManagerFixes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Runtime\RuntimeDetour.cs" />
     <Compile Include="Runtime\RuntimeILSwap.cs" />
