@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -9,6 +10,8 @@ namespace CSLAPI.Utils
 	// syntax and just make life easy.
 	internal class ReflectionUtils
 	{
+		private static Dictionary<Type, Dictionary<string, MethodInfo>> _methodCache = new Dictionary<Type, Dictionary<string, MethodInfo>>();
+		private static Dictionary<Type, Dictionary<string, FieldInfo>> _fieldCache = new Dictionary<Type, Dictionary<string, FieldInfo>>();
 		#region Invoke
 
 		/// <summary>
@@ -37,6 +40,23 @@ namespace CSLAPI.Utils
 			// Try and find the method via the arguments passed in.
 			var methodArgumentTypes = args.Select(a => a.GetType()).ToArray();
 
+			Dictionary<string, MethodInfo> typeCache;
+			if (_methodCache.TryGetValue(type, out typeCache))
+			{
+				// Build the method sig maybe?
+				string methodSig = methodName + "@" + string.Join(",", methodArgumentTypes.Select(t => t.Name).ToArray());
+				MethodInfo info;
+				if (typeCache.TryGetValue(methodSig, out info))
+				{
+					if (info.ReturnType == typeof(void))
+					{
+						info.Invoke(null, args);
+						return default(T);
+					}
+					return (T)info.Invoke(null, args);
+				}
+			}
+
 			// Pass a null array to GetMethod as it shortcuts early instead of doing some sanity checks inside GetMethod itself.
 			if (methodArgumentTypes.Length == 0)
 			{
@@ -57,6 +77,15 @@ namespace CSLAPI.Utils
 						methodArgumentTypes != null ? string.Join(", ", methodArgumentTypes.Select(t => t.Name).ToArray()) : string.Empty,
 						type.FullName),
 					"methodName");
+			}
+
+			if (typeCache == null)
+			{
+				typeCache = new Dictionary<string, MethodInfo>
+				{
+					{methodName + "@" + string.Join(",", methodArgumentTypes.Select(t => t.Name).ToArray()), methodInfo}
+				};
+				_methodCache.Add(type, typeCache);
 			}
 
 			// Note: The invokes here are specifically not in a try/catch. The exception will bubble up to the caller so it can be handled there properly,
@@ -95,6 +124,23 @@ namespace CSLAPI.Utils
 			// Try and find the method via the arguments passed in.
 			var methodArgumentTypes = args.Select(a => a.GetType()).ToArray();
 
+			Dictionary<string, MethodInfo> typeCache;
+			if (_methodCache.TryGetValue(instance.GetType(), out typeCache))
+			{
+				// Build the method sig maybe?
+				string methodSig = methodName + "@" + string.Join(",", methodArgumentTypes.Select(t => t.Name).ToArray());
+				MethodInfo info;
+				if (typeCache.TryGetValue(methodSig, out info))
+				{
+					if (info.ReturnType == typeof(void))
+					{
+						info.Invoke(instance, args);
+						return default(T);
+					}
+					return (T)info.Invoke(instance, args);
+				}
+			}
+
 			// Pass a null array to GetMethod as it shortcuts early instead of doing some sanity checks inside GetMethod itself.
 			if (methodArgumentTypes.Length == 0)
 			{
@@ -117,6 +163,16 @@ namespace CSLAPI.Utils
 					"methodName");
 			}
 
+
+			if (typeCache == null)
+			{
+				typeCache = new Dictionary<string, MethodInfo>
+				{
+					{methodName + "@" + string.Join(",", methodArgumentTypes.Select(t => t.Name).ToArray()), methodInfo}
+				};
+				_methodCache.Add(instance.GetType(), typeCache);
+			}
+
 			// Note: The invokes here are specifically not in a try/catch. The exception will bubble up to the caller so it can be handled there properly,
 			// rather than suppressing anything we'd do here.
 			if (methodInfo.ReturnType == typeof(void))
@@ -133,40 +189,119 @@ namespace CSLAPI.Utils
 
 		public static T GetField<T>(Type type, string fieldName)
 		{
+			Dictionary<string, FieldInfo> typeCache;
+			if (_fieldCache.TryGetValue(type, out typeCache))
+			{
+				FieldInfo info;
+				if (typeCache.TryGetValue(fieldName, out info))
+				{
+					return (T)info.GetValue(null);
+				}
+			}
 			var field = type.GetField(fieldName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
 			if (field == null)
 			{
 				throw new ArgumentException("Field '" + fieldName + "' could not be found on object of type " + type.FullName, "fieldName");
 			}
+
+
+			if (typeCache == null)
+			{
+				typeCache = new Dictionary<string, FieldInfo>
+				{
+					{fieldName, field}
+				};
+				_fieldCache.Add(type, typeCache);
+			}
+
 			return (T) field.GetValue(null);
 		}
 
 		public static void SetField(Type type, string fieldName, object value)
 		{
+			Dictionary<string, FieldInfo> typeCache;
+			if (_fieldCache.TryGetValue(type, out typeCache))
+			{
+				FieldInfo info;
+				if (typeCache.TryGetValue(fieldName, out info))
+				{
+					info.SetValue(null, value);
+				}
+			}
 			var field = type.GetField(fieldName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
 			if (field == null)
 			{
 				throw new ArgumentException("Field '" + fieldName + "' could not be found on object of type " + type.FullName, "fieldName");
 			}
+
+
+			if (typeCache == null)
+			{
+				typeCache = new Dictionary<string, FieldInfo>
+				{
+					{fieldName, field}
+				};
+				_fieldCache.Add(type, typeCache);
+			}
+
 			field.SetValue(null, value);
 		}
 
 		public static T GetField<T>(object instance, string fieldName)
 		{
+			Dictionary<string, FieldInfo> typeCache;
+			if (_fieldCache.TryGetValue(instance.GetType(), out typeCache))
+			{
+				FieldInfo info;
+				if (typeCache.TryGetValue(fieldName, out info))
+				{
+					return (T)info.GetValue(instance);
+				}
+			}
 			var field = instance.GetType().GetField(fieldName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
 			if (field == null)
 			{
 				throw new ArgumentException("Field '" + fieldName + "' could not be found on object of type " + instance.GetType().FullName, "fieldName");
 			}
+
+
+
+			if (typeCache == null)
+			{
+				typeCache = new Dictionary<string, FieldInfo>
+				{
+					{fieldName, field}
+				};
+				_fieldCache.Add(instance.GetType(), typeCache);
+			}
+
 			return (T) field.GetValue(instance);
 		}
 
 		public static void SetField(object instance, string fieldName, object value)
 		{
+			Dictionary<string, FieldInfo> typeCache;
+			if (_fieldCache.TryGetValue(instance.GetType(), out typeCache))
+			{
+				FieldInfo info;
+				if (typeCache.TryGetValue(fieldName, out info))
+				{
+					info.SetValue(instance, value);
+				}
+			}
 			var field = instance.GetType().GetField(fieldName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
 			if (field == null)
 			{
 				throw new ArgumentException("Field '" + fieldName + "' could not be found on object of type " + instance.GetType().FullName, "fieldName");
+			}
+
+			if (typeCache == null)
+			{
+				typeCache = new Dictionary<string, FieldInfo>
+				{
+					{fieldName, field}
+				};
+				_fieldCache.Add(instance.GetType(), typeCache);
 			}
 			field.SetValue(instance, value);
 		}
