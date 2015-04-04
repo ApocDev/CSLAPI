@@ -35,13 +35,17 @@
     <Compile Include="Fixes\ClientFixAttribute.cs" />
     <Compile Include="Fixes\PluginManagerFixes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Registry\DetourRegistry.cs" />
     <Compile Include="Runtime\RuntimeDetour.cs" />
     <Compile Include="Runtime\RuntimeILSwap.cs" />
     <Compile Include="Utils\ArrayUtils.cs" />
+    <Compile Include="Utils\ChirpyUtils.cs" />
+    <Compile Include="Utils\CitizenUtils.cs" />
     <Compile Include="Utils\Finders\AttributeFinder.cs" />
     <Compile Include="Utils\Finders\Tuple.cs" />
     <Compile Include="Utils\Finders\TypeFinder.cs" />
     <Compile Include="Utils\ReflectionUtils.cs" />
+    <Compile Include="Utils\TextureUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">

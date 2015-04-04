@@ -14,6 +14,54 @@ namespace CSLAPI.Utils
 		private static Dictionary<Type, Dictionary<string, FieldInfo>> _fieldCache = new Dictionary<Type, Dictionary<string, FieldInfo>>();
 		#region Invoke
 
+		public static MethodInfo FindMethod(Type type, string methodName, params Type[] args)
+		{
+			Dictionary<string, MethodInfo> typeCache;
+			if (_methodCache.TryGetValue(type, out typeCache))
+			{
+				// Build the method sig maybe?
+				string methodSig = methodName + "@" + string.Join(",", args.Select(t => t.Name).ToArray());
+				MethodInfo info;
+				if (typeCache.TryGetValue(methodSig, out info))
+				{
+					return info;
+				}
+			}
+
+			// Pass a null array to GetMethod as it shortcuts early instead of doing some sanity checks inside GetMethod itself.
+			if (args.Length == 0)
+			{
+				args = null;
+			}
+
+			var methodInfo = type.GetMethod(methodName,
+				BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static,
+				null,
+				args,
+				null);
+
+			if (methodInfo == null)
+			{
+				throw new ArgumentException(
+					string.Format("Method '{0}({1})' could not be found on object of type {2}",
+						methodName,
+						args != null ? string.Join(", ", args.Select(t => t.Name).ToArray()) : string.Empty,
+						type.FullName),
+					"methodName");
+			}
+
+			if (typeCache == null)
+			{
+				typeCache = new Dictionary<string, MethodInfo>
+				{
+					{methodName + "@" + string.Join(",", args.Select(t => t.Name).ToArray()), methodInfo}
+				};
+				_methodCache.Add(type, typeCache);
+			}
+
+			return methodInfo;
+		}
+
 		/// <summary>
 		///     Invokes a static method on the specified type.
 		/// </summary>

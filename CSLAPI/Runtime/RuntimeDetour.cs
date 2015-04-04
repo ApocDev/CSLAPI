@@ -14,6 +14,13 @@ namespace CSLAPI.Runtime
 	/// </remarks>
 	public class RuntimeDetour : IDisposable
 	{
+		/*
+		 TODO:
+		 * Add proper disasm so we can insert detours at the start/end/middle/wherever of the function
+		 * Maybe add some simple pattern-based detouring. (Steal PatternFinder from GreyMagic and use that)		 
+		 */
+
+
 		/// <summary>
 		///     Initializes a new instance of RuntimeDetour
 		/// </summary>
@@ -112,9 +119,6 @@ namespace CSLAPI.Runtime
 			Marshal.Copy(TargetPointer, origBytes, 0, origBytes.Length);
 			OriginalBytes = origBytes;
 
-			// TODO: This is only x64 compatible. CS:L is also x86 compatible, so we'll need to properly do the 5 byte
-			// jump for easiest compat between both archs
-
 			// TODO: jmp qword [funcPtr]
 			// 5 byte patch to just far jump
 			// Assume x64 shadow space stack is alloc'd correctly for locals
@@ -124,6 +128,9 @@ namespace CSLAPI.Runtime
 
 			// mono itself uses the r11 register (which isn't good on Windows due to syscall stuff)
 			// So we'll just move to r11, and jmp to r11
+			// TODO: MonoMethod code pointer swap so we can do proper detours
+			// Use the hooking system otherwise.
+			// TODO: Generate code caves so we can do rel jumps back and forth for proper hooks.
 
 			byte* target = (byte*) TargetPointer;
 			// mov r11, funcptr

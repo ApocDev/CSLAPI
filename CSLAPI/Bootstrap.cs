@@ -2,6 +2,7 @@
 using System.Reflection;
 
 using CSLAPI.Fixes;
+using CSLAPI.Registry;
 using CSLAPI.Utils.Finders;
 
 using ICities;
@@ -22,9 +23,22 @@ namespace CSLAPI
 				return;
 			}
 
+			DetourRegistry.Initialize();
 			ClientFixes = new AttributeFinder<ClientFixAttribute>(false);
 			ClientFixes.Updated += ApplyClientFixes;
 			ApplyClientFixes();
+		}
+
+		public static void DumpPrefabs()
+		{
+			var count = PrefabCollection<NetInfo>.PrefabCount();
+			for (uint i = 0; i < count; i++)
+			{
+				var prefab = PrefabCollection<NetInfo>.GetPrefab(i);
+
+				if (prefab == null)
+					continue;
+			}
 		}
 
 		private static void ApplyClientFixes()
